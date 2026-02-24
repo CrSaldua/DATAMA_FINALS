@@ -1,0 +1,155 @@
+-- --------------------------------------------------------
+-- CITY LIBRARY SYSTEM - EXPANDED DATABASE EXPORT
+-- --------------------------------------------------------
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+08:00";
+
+--
+-- 1. DATABASE SETUP
+--
+DROP DATABASE IF EXISTS library_db;
+CREATE DATABASE IF NOT EXISTS library_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE library_db;
+
+-- --------------------------------------------------------
+-- 2. TABLE STRUCTURES (DDL)
+-- --------------------------------------------------------
+
+CREATE TABLE `admins` (
+  `admin_id` INT NOT NULL AUTO_INCREMENT,
+  `employee_code` varchar(20) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `firstname` varchar(100) NOT NULL,
+  `lastname` varchar(100) NOT NULL,
+  `created_at` timestamp DEFAULT current_timestamp(),
+  PRIMARY KEY (`admin_id`),
+  UNIQUE KEY `employee_code` (`employee_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `members` (
+  `member_id` BIGINT NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `members_firstname` varchar(100) NOT NULL,
+  `members_lastname` varchar(100) NOT NULL,
+  `mobile_number` varchar(20) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `created_at` timestamp DEFAULT current_timestamp(),
+  PRIMARY KEY (`member_id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `authors` (
+  `author_id` BIGINT NOT NULL AUTO_INCREMENT,
+  `author_firstname` varchar(100) NOT NULL,
+  `author_lastname` varchar(100) NOT NULL,
+  `created_at` timestamp DEFAULT current_timestamp(),
+  PRIMARY KEY (`author_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `books` (
+  `book_id` BIGINT NOT NULL AUTO_INCREMENT,
+  `isbn` varchar(20) DEFAULT NULL,
+  `title` varchar(255) NOT NULL,
+  `author_id` BIGINT NOT NULL,
+  `category` varchar(100) NOT NULL,
+  `cover_image` varchar(500) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `publication_year` int(4) DEFAULT NULL,
+  `total_copies` int(11) DEFAULT 1,
+  `available_copies` int(11) DEFAULT 1,
+  `created_at` timestamp DEFAULT current_timestamp(),
+  PRIMARY KEY (`book_id`),
+  KEY `fk_book_author` (`author_id`),
+  CONSTRAINT `fk_book_author` FOREIGN KEY (`author_id`) REFERENCES `authors` (`author_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `loans` (
+  `loan_id` BIGINT NOT NULL AUTO_INCREMENT,
+  `member_id` BIGINT NOT NULL,
+  `book_id` BIGINT NOT NULL,
+  `borrow_date` date NOT NULL,
+  `due_date` date NOT NULL,
+  `return_date` date DEFAULT NULL,
+  `status` enum('borrowed','returned') DEFAULT 'borrowed',
+  `fine_amount` decimal(10,2) DEFAULT 0.00,
+  `created_at` timestamp DEFAULT current_timestamp(),
+  PRIMARY KEY (`loan_id`),
+  KEY `fk_loan_member` (`member_id`),
+  KEY `fk_loan_book` (`book_id`),
+  CONSTRAINT `fk_loan_book` FOREIGN KEY (`book_id`) REFERENCES `books` (`book_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_loan_member` FOREIGN KEY (`member_id`) REFERENCES `members` (`member_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- --------------------------------------------------------
+-- 3. SAMPLE DATA INSERTION (DML)
+-- --------------------------------------------------------
+
+-- 1. ADMIN (Kept Original)
+INSERT INTO `admins` (`employee_code`, `password`, `firstname`, `lastname`) VALUES
+('100200', 'admin123', 'Head', 'Librarian');
+	
+-- 2. AUTHORS (Expanded to 12)
+INSERT INTO `authors` (`author_id`, `author_firstname`, `author_lastname`) VALUES
+(1, 'George', 'Orwell'),
+(2, 'J.K.', 'Rowling'),
+(3, 'Isaac', 'Asimov'),
+(4, 'Kentaro', 'Miura'),
+(5, 'F. Scott', 'Fitzgerald'),
+(6, 'Haruki', 'Murakami'),
+(7, 'J.R.R.', 'Tolkien'),
+(8, 'Stephen', 'King'),
+(9, 'Agatha', 'Christie'),
+(10, 'Jane', 'Austen'),
+(11, 'Frank', 'Herbert'),
+(12, 'Walter', 'Isaacson');
+
+-- 3. BOOKS (Expanded to 15 across genres)
+INSERT INTO `books` (`book_id`, `isbn`, `title`, `author_id`, `category`, `cover_image`, `total_copies`, `available_copies`) VALUES
+(1, '9780451524935', '1984', 1, 'Dystopian', 'https://covers.openlibrary.org/b/id/7222246-L.jpg', 10, 8),
+(2, '9780747532743', 'Harry Potter and the Sorcerers Stone', 2, 'Fantasy', 'https://covers.openlibrary.org/b/id/10522438-L.jpg', 15, 12),
+(3, '9780553294385', 'I, Robot', 3, 'Sci-Fi', 'https://covers.openlibrary.org/b/id/6405788-L.jpg', 8, 6),
+(4, '9781593070205', 'Berserk Vol. 1', 4, 'Fantasy', 'https://covers.openlibrary.org/b/id/8343303-L.jpg', 5, 2),
+(5, '9780743273565', 'The Great Gatsby', 5, 'Historical Fiction', 'https://covers.openlibrary.org/b/id/8432047-L.jpg', 5, 5),
+(6, '9780307744432', 'Norwegian Wood', 6, 'Romance', 'https://covers.openlibrary.org/b/id/8369680-L.jpg', 7, 5),
+(7, '9780261102385', 'The Fellowship of the Ring', 7, 'Fantasy', 'https://covers.openlibrary.org/b/id/8386345-L.jpg', 12, 10),
+(8, '9781501142970', 'It', 8, 'Horror', 'https://covers.openlibrary.org/b/id/8326978-L.jpg', 6, 6),
+(9, '9780062073488', 'And Then There Were None', 9, 'Mystery', 'https://covers.openlibrary.org/b/id/8263721-L.jpg', 8, 7),
+(10, '9780141439518', 'Pride and Prejudice', 10, 'Romance', 'https://covers.openlibrary.org/b/id/8228581-L.jpg', 10, 9),
+(11, '9780441013593', 'Dune', 11, 'Sci-Fi', 'https://covers.openlibrary.org/b/id/9253492-L.jpg', 20, 15),
+(12, '9781451648539', 'Steve Jobs', 12, 'Biography', 'https://covers.openlibrary.org/b/id/7328904-L.jpg', 5, 4),
+(13, '9780451524936', 'Animal Farm', 1, 'Satire', 'https://covers.openlibrary.org/b/id/7222236-L.jpg', 10, 10),
+(14, '9780547928227', 'The Hobbit', 7, 'Fantasy', 'https://covers.openlibrary.org/b/id/6977416-L.jpg', 15, 14),
+(15, '9780345391803', 'The Hitchhikers Guide to the Galaxy', 3, 'Sci-Fi', 'https://covers.openlibrary.org/b/id/8813247-L.jpg', 8, 8);
+
+-- 4. MEMBERS (Expanded to 5 users)
+INSERT INTO `members` (`username`, `password`, `members_firstname`, `members_lastname`, `mobile_number`, `email`) VALUES
+('testuser', '12345', 'John', 'Doe', '09171234567', 'john@example.com'),
+('sarahconnor', '12345', 'Sarah', 'Connor', '09181234567', 'sarah@example.com'),
+('mcmarty', '12345', 'Marty', 'McFly', '09191234567', 'marty@future.com'),
+('tonystark', '12345', 'Tony', 'Stark', '09201234567', 'tony@stark.com'),
+('hermione', '12345', 'Hermione', 'Granger', '09211234567', 'h.granger@hogwarts.edu');
+
+-- 5. LOANS (Expanded History & Active)
+INSERT INTO `loans` (`member_id`, `book_id`, `borrow_date`, `due_date`, `return_date`, `status`, `fine_amount`) VALUES
+-- History (Returned on time)
+(1, 2, DATE_SUB(CURDATE(), INTERVAL 30 DAY), DATE_SUB(CURDATE(), INTERVAL 23 DAY), DATE_SUB(CURDATE(), INTERVAL 25 DAY), 'returned', 0.00),
+(3, 11, DATE_SUB(CURDATE(), INTERVAL 15 DAY), DATE_SUB(CURDATE(), INTERVAL 8 DAY), DATE_SUB(CURDATE(), INTERVAL 9 DAY), 'returned', 0.00),
+(5, 7, DATE_SUB(CURDATE(), INTERVAL 40 DAY), DATE_SUB(CURDATE(), INTERVAL 33 DAY), DATE_SUB(CURDATE(), INTERVAL 33 DAY), 'returned', 0.00),
+
+-- History (Returned Late with Fine)
+(4, 12, DATE_SUB(CURDATE(), INTERVAL 20 DAY), DATE_SUB(CURDATE(), INTERVAL 13 DAY), DATE_SUB(CURDATE(), INTERVAL 10 DAY), 'returned', 60.00),
+
+-- Active (Normal)
+(1, 5, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7 DAY), NULL, 'borrowed', 0.00),
+(3, 4, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7 DAY), NULL, 'borrowed', 0.00),
+(5, 14, DATE_SUB(CURDATE(), INTERVAL 2 DAY), DATE_ADD(CURDATE(), INTERVAL 5 DAY), NULL, 'borrowed', 0.00),
+
+-- Active (Overdue!)
+(2, 1, DATE_SUB(CURDATE(), INTERVAL 20 DAY), DATE_SUB(CURDATE(), INTERVAL 13 DAY), NULL, 'borrowed', 0.00),
+(4, 3, DATE_SUB(CURDATE(), INTERVAL 10 DAY), DATE_SUB(CURDATE(), INTERVAL 3 DAY), NULL, 'borrowed', 0.00);
+
+COMMIT;
